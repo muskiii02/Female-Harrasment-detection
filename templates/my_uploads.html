@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}My Uploads{% endblock %}
+
+{% block extra_css %}
+<style>
+    .uploads-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2rem;
+    }
+
+    .upload-card {
+        background: rgba(26, 26, 46, 0.6);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(45, 45, 68, 0.5);
+        transition: all 0.3s;
+    }
+
+    .upload-card:hover {
+        transform: translateY(-4px);
+        border-color: var(--primary-purple);
+        box-shadow: 0 6px 30px var(--purple-glow);
+    }
+
+    .upload-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        cursor: pointer;
+        border-bottom: 2px solid var(--border-dark);
+    }
+
+    .upload-info {
+        padding: 1.5rem;
+    }
+
+    .upload-info p {
+        color: var(--text-light);
+    }
+
+    .upload-info strong {
+        color: var(--text-white);
+    }
+
+    .badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .badge-danger { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid var(--danger); }
+    .badge-success { background: rgba(16, 185, 129, 0.2); color: var(--success); border: 1px solid var(--success); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="background: rgba(26, 26, 46, 0.6); backdrop-filter: blur(10px); padding: 2rem; border-radius: 12px; margin-bottom: 2rem; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); border: 1px solid rgba(45, 45, 68, 0.5);">
+    <h1 style="color: var(--text-white); margin-bottom: 0.5rem;">My Uploads 📂</h1>
+    <p style="color: var(--text-light);">View your upload history and detection results</p>
+</div>
+
+<div class="uploads-grid">
+    {% if uploads %}
+        {% for upload in uploads %}
+        <div class="upload-card">
+            <img src="{{ url_for('uploaded_file', filename=upload.filename) }}" 
+                 class="upload-image" alt="Upload"
+                 onclick="window.open(this.src, '_blank')">
+            <div class="upload-info">
+                <p><strong>{{ upload.filename }}</strong></p>
+                <p><small>{{ upload.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</small></p>
+                <p style="margin-top: 1rem;">
+                    <span class="badge badge-{{ 'danger' if upload.detection_result == 'harassment' else 'success' }}">
+                        {{ upload.detection_result.upper() }}
+                    </span>
+                    <small>({{ '%.1f'| format(upload.confidence * 100) }}%)</small>
+                </p>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="card" style="grid-column: 1 / -1;">
+            <p style="text-align: center; color: var(--text-muted);">No uploads yet. Start uploading from the dashboard!</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+

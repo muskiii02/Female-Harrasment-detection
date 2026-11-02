@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        background: rgba(26, 26, 46, 0.6);
+        backdrop-filter: blur(10px);
+        padding: 2.5rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        border-left: 6px solid var(--primary-purple);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, var(--purple-glow) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+
+    .page-header h1 {
+        color: var(--text-white);
+        margin-bottom: 0.5rem;
+        font-size: 2rem;
+        font-weight: 700;
+        position: relative;
+        z-index: 1;
+    }
+
+    .page-header p {
+        color: var(--text-light);
+        font-size: 1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    @media (max-width: 1200px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    .stat-card {
+        background: rgba(26, 26, 46, 0.6);
+        backdrop-filter: blur(10px);
+        padding: 2rem;
+        border-radius: 16px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(45, 45, 68, 0.5);
+        transition: all 0.3s;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-purple), var(--secondary-purple));
+    }
+
+    .stat-card:nth-child(2)::before { background: linear-gradient(90deg, var(--secondary-purple), var(--light-purple)); }
+    .stat-card:nth-child(3)::before { background: linear-gradient(90deg, var(--danger), #F87171); }
+    .stat-card:nth-child(4)::before { background: linear-gradient(90deg, var(--warning), #FBBF24); }
+
+    .stat-card:hover {
+        transform: translateY(-6px);
+        border-color: var(--primary-purple);
+        box-shadow: 0 6px 30px var(--purple-glow);
+    }
+
+    .stat-icon {
+        font-size: 3rem;
+        margin-bottom: 0.75rem;
+        opacity: 0.9;
+        filter: drop-shadow(0 0 10px var(--purple-glow));
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--primary-purple), var(--secondary-purple));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-card:nth-child(2) .stat-number {
+        background: linear-gradient(135deg, var(--secondary-purple), var(--light-purple));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .stat-card:nth-child(3) .stat-number {
+        background: linear-gradient(135deg, var(--danger), #F87171);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .stat-card:nth-child(4) .stat-number {
+        background: linear-gradient(135deg, var(--warning), #FBBF24);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .stat-label {
+        color: var(--text-light);
+        font-size: 0.95rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .alerts-section {
+        background: rgba(26, 26, 46, 0.6);
+        backdrop-filter: blur(10px);
+        padding: 2.5rem;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(45, 45, 68, 0.5);
+    }
+
+    .section-title {
+        color: var(--text-white);
+        font-weight: 600;
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .alert-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.25rem;
+        border-radius: 8px;
+        margin-bottom: 0.75rem;
+        background: rgba(10, 10, 20, 0.4);
+        backdrop-filter: blur(5px);
+        transition: all 0.3s;
+        border-left: 4px solid transparent;
+    }
+
+    .alert-item:hover {
+        background: var(--bg-card-hover);
+        transform: translateX(4px);
+        border-left-color: var(--warning);
+    }
+
+    .badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .badge-warning {
+        background: rgba(245, 158, 11, 0.2);
+        color: var(--warning);
+        border: 1px solid var(--warning);
+    }
+
+    .badge-danger {
+        background: rgba(239, 68, 68, 0.2);
+        color: var(--danger);
+        border: 1px solid var(--danger);
+    }
+
+    .btn-small {
+        padding: 0.4rem 1rem;
+        font-size: 0.9rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Admin Dashboard 👨‍💼</h1>
+    <p>System overview and management</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-number">{{ total_users }}</div>
+        <div class="stat-label">Total Users</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">📸</div>
+        <div class="stat-number">{{ total_uploads }}</div>
+        <div class="stat-label">Total Uploads</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">⚠️</div>
+        <div class="stat-number">{{ harassment_uploads }}</div>
+        <div class="stat-label">Harassment Detected</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">🔔</div>
+        <div class="stat-number">{{ pending_alerts }}</div>
+        <div class="stat-label">Pending Alerts</div>
+    </div>
+</div>
+
+<div class="alerts-section">
+    <h2 class="section-title">🔔 Recent Alerts</h2>
+    {% if recent_alerts %}
+        {% for alert in recent_alerts %}
+        <div class="alert-item">
+            <div>
+                <strong style="color: var(--text-white);">Alert #{{ alert.id }}</strong>
+                <br>
+                <small style="color: var(--text-light);">👤 {{ alert.upload.user.username }}</small>
+                <br>
+                <small style="color: var(--text-light);">📅 {{ alert.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+            </div>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <span class="badge badge-{{ 'warning' if alert.status == 'pending' else 'danger' }}">
+                    {{ alert.status.upper() }}
+                </span>
+                <a href="{{ url_for('admin_alerts') }}" class="btn btn-primary btn-small">Review →</a>
+            </div>
+        </div>
+        {% endfor %}
+        <div style="text-align: center; margin-top: 2rem;">
+            <a href="{{ url_for('admin_alerts') }}" class="btn btn-primary">View All Alerts</a>
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 3rem;">
+            <div style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.3;">🔕</div>
+            <p style="color: var(--text-muted); font-size: 1.1rem;">No pending alerts</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+

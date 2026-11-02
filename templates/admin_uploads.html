@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}All Uploads{% endblock %}
+
+{% block extra_css %}
+<style>
+    .filters {
+        background: rgba(26, 26, 46, 0.6);
+        backdrop-filter: blur(10px);
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(45, 45, 68, 0.5);
+    }
+
+    .filters strong {
+        color: var(--text-white);
+    }
+
+    .filter-btn {
+        padding: 0.75rem 1.5rem;
+        border: 2px solid rgba(45, 45, 68, 0.5);
+        background: rgba(10, 10, 20, 0.4);
+        backdrop-filter: blur(5px);
+        color: var(--text-light);
+        border-radius: 25px;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .filter-btn:hover, .filter-btn.active {
+        border-color: var(--primary-purple);
+        background: var(--primary-purple);
+        color: white;
+        box-shadow: 0 4px 15px var(--purple-glow);
+    }
+
+    .uploads-table {
+        background: rgba(26, 26, 46, 0.6);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(45, 45, 68, 0.5);
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th {
+        background: rgba(10, 10, 20, 0.4);
+        backdrop-filter: blur(5px);
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        color: var(--text-white);
+        border-bottom: 2px solid var(--border-dark);
+    }
+
+    td {
+        padding: 1rem;
+        border-bottom: 1px solid var(--border-dark);
+        color: var(--text-light);
+    }
+
+    tr:hover {
+        background: var(--bg-card-hover);
+    }
+
+    .upload-thumb {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 8px;
+        cursor: pointer;
+        border: 2px solid rgba(45, 45, 68, 0.5);
+    }
+
+    .badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .badge-danger { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid var(--danger); }
+    .badge-success { background: rgba(16, 185, 129, 0.2); color: var(--success); border: 1px solid var(--success); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="background: rgba(26, 26, 46, 0.6); backdrop-filter: blur(10px); padding: 2rem; border-radius: 12px; margin-bottom: 2rem; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); border: 1px solid rgba(45, 45, 68, 0.5);">
+    <h1 style="color: var(--text-white); margin-bottom: 0.5rem;">All Uploads 📸</h1>
+    <p style="color: var(--text-light);">View and manage all uploaded images</p>
+</div>
+
+<div class="filters">
+    <strong>Filter:</strong>
+    <a href="?result=all" class="filter-btn {{ 'active' if result_filter == 'all' else '' }}">All</a>
+    <a href="?result=harassment" class="filter-btn {{ 'active' if result_filter == 'harassment' else '' }}">Harassment</a>
+    <a href="?result=normal" class="filter-btn {{ 'active' if result_filter == 'normal' else '' }}">Normal</a>
+</div>
+
+<div class="uploads-table">
+    <table>
+        <thead>
+            <tr>
+                <th>Image</th>
+                <th>User</th>
+                <th>Filename</th>
+                <th>Result</th>
+                <th>Confidence</th>
+                <th>Uploaded</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if uploads %}
+                {% for upload in uploads %}
+                <tr>
+                    <td>
+                        <img src="{{ url_for('uploaded_file', filename=upload.filename) }}" 
+                             class="upload-thumb" alt="Upload"
+                             onclick="window.open(this.src, '_blank')">
+                    </td>
+                    <td>{{ upload.user.username }}</td>
+                    <td><small>{{ upload.filename }}</small></td>
+                    <td>
+                        <span class="badge badge-{{ 'danger' if upload.detection_result == 'harassment' else 'success' }}">
+                            {{ upload.detection_result.upper() }}
+                        </span>
+                    </td>
+                    <td>{{ '%.1f'| format(upload.confidence * 100) }}%</td>
+                    <td><small>{{ upload.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</small></td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 3rem; color: var(--text-muted);">
+                        No uploads found
+                    </td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+

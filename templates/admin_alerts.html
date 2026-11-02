@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Alerts{% endblock %}
+
+{% block extra_css %}
+<style>
+    .filters {
+        background: rgba(26, 26, 46, 0.6);
+        backdrop-filter: blur(10px);
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(45, 45, 68, 0.5);
+    }
+
+    .filters strong {
+        color: var(--text-white);
+    }
+
+    .filter-btn {
+        padding: 0.75rem 1.5rem;
+        border: 2px solid rgba(45, 45, 68, 0.5);
+        background: rgba(10, 10, 20, 0.4);
+        backdrop-filter: blur(5px);
+        color: var(--text-light);
+        border-radius: 25px;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .filter-btn:hover, .filter-btn.active {
+        border-color: var(--primary-purple);
+        background: var(--primary-purple);
+        color: white;
+        box-shadow: 0 4px 15px var(--purple-glow);
+    }
+
+    .alerts-list {
+        background: rgba(26, 26, 46, 0.6);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(45, 45, 68, 0.5);
+    }
+
+    .alert-detail {
+        border-bottom: 1px solid var(--border-dark);
+        padding: 2rem;
+        display: grid;
+        grid-template-columns: 200px 1fr 200px;
+        gap: 2rem;
+        align-items: start;
+        transition: background 0.3s;
+    }
+
+    .alert-detail:hover {
+        background: var(--bg-card-hover);
+    }
+
+    .alert-detail:last-child {
+        border-bottom: none;
+    }
+
+    .alert-image {
+        width: 100%;
+        border-radius: 10px;
+        cursor: pointer;
+        border: 2px solid rgba(45, 45, 68, 0.5);
+    }
+
+    .badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .badge-warning { background: rgba(245, 158, 11, 0.2); color: var(--warning); border: 1px solid var(--warning); }
+    .badge-success { background: rgba(16, 185, 129, 0.2); color: var(--success); border: 1px solid var(--success); }
+    .badge-secondary { background: var(--bg-darker); color: var(--text-light); border: 1px solid var(--border-dark); }
+
+    .review-form {
+        margin-top: 1rem;
+    }
+
+    .review-form textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid rgba(45, 45, 68, 0.5);
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        font-family: inherit;
+        transition: all 0.3s;
+        background: rgba(10, 10, 20, 0.4);
+        backdrop-filter: blur(5px);
+        color: var(--text-white);
+    }
+
+    .review-form textarea:focus {
+        outline: none;
+        border-color: var(--primary-purple);
+        background: rgba(26, 26, 46, 0.6);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 0 0 3px var(--purple-glow);
+    }
+
+    .review-actions {
+        display: flex;
+        gap: 1rem;
+    }
+
+    h3 {
+        color: var(--text-white);
+    }
+
+    p {
+        color: var(--text-light);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="background: rgba(26, 26, 46, 0.6); backdrop-filter: blur(10px); padding: 2rem; border-radius: 12px; margin-bottom: 2rem; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); border: 1px solid rgba(45, 45, 68, 0.5);">
+    <h1 style="color: var(--text-white); margin-bottom: 0.5rem;">Manage Alerts 🔔</h1>
+    <p style="color: var(--text-light);">Review and manage harassment detection alerts</p>
+</div>
+
+<div class="filters">
+    <strong>Filter:</strong>
+    <a href="?status=all" class="filter-btn {{ 'active' if status_filter == 'all' else '' }}">All</a>
+    <a href="?status=pending" class="filter-btn {{ 'active' if status_filter == 'pending' else '' }}">Pending</a>
+    <a href="?status=reviewed" class="filter-btn {{ 'active' if status_filter == 'reviewed' else '' }}">Reviewed</a>
+    <a href="?status=dismissed" class="filter-btn {{ 'active' if status_filter == 'dismissed' else '' }}">Dismissed</a>
+</div>
+
+<div class="alerts-list">
+    {% if alerts %}
+        {% for alert in alerts %}
+        <div class="alert-detail">
+            <div>
+                <img src="{{ url_for('uploaded_file', filename=alert.upload.filename) }}" 
+                     class="alert-image" alt="Upload"
+                     onclick="window.open(this.src, '_blank')">
+                <p style="margin-top: 0.5rem; text-align: center;">
+                    <small>{{ alert.upload.filename }}</small>
+                </p>
+            </div>
+            <div>
+                <h3>Alert #{{ alert.id }}</h3>
+                <p><strong>User:</strong> {{ alert.upload.user.username }}</p>
+                <p><strong>Uploaded:</strong> {{ alert.upload.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                <p><strong>Confidence:</strong> {{ '%.1f'| format(alert.upload.confidence * 100) }}%</p>
+                <p><strong>Status:</strong> 
+                    <span class="badge badge-{{ 'warning' if alert.status == 'pending' else ('success' if alert.status == 'reviewed' else 'secondary') }}">
+                        {{ alert.status.upper() }}
+                    </span>
+                </p>
+                {% if alert.admin_notes %}
+                <p><strong>Notes:</strong> {{ alert.admin_notes }}</p>
+                {% endif %}
+                {% if alert.reviewed_at %}
+                <p><strong>Reviewed:</strong> {{ alert.reviewed_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                {% endif %}
+            </div>
+            <div>
+                {% if alert.status == 'pending' %}
+                <form method="POST" action="{{ url_for('review_alert', alert_id=alert.id) }}" class="review-form">
+                    <textarea name="notes" placeholder="Add notes..." rows="3"></textarea>
+                    <div class="review-actions">
+                        <button type="submit" name="action" value="reviewed" class="btn btn-primary">
+                            ✓ Reviewed
+                        </button>
+                        <button type="submit" name="action" value="dismissed" class="btn btn-danger">
+                            ✗ Dismiss
+                        </button>
+                    </div>
+                </form>
+                {% else %}
+                <p style="color: var(--text-muted);">Already {{ alert.status }}</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p style="text-align: center; padding: 3rem; color: var(--text-muted);">No alerts found</p>
+    {% endif %}
+</div>
+{% endblock %}
+
